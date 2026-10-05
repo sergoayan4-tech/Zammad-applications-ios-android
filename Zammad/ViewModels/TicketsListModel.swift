@@ -3,10 +3,10 @@ import Observation
 
 /// Quick filters above the ticket list.
 enum TicketFilter: String, CaseIterable, Identifiable {
-    case all
     case open
-    case mine
     case closed
+    case all
+    case mine
 
     var id: String { rawValue }
 
@@ -49,7 +49,7 @@ final class TicketsListModel {
     private(set) var hasMore = false
     private(set) var searching = false
     private(set) var query = ""
-    var filter: TicketFilter = .all
+    var filter: TicketFilter = .open
     var error: Error?
 
     private var page = 1
@@ -162,7 +162,9 @@ final class TicketsListModel {
             filtered = base
         case .mine:
             if let myID {
-                filtered = base.filter { $0.ownerId == myID }
+                // "Mine" means open tickets assigned to me (as requested);
+                // my closed ones are still visible under the "Closed" tab.
+                filtered = base.filter { $0.ownerId == myID && !Self.isClosed($0) }
             } else {
                 filtered = []
             }
