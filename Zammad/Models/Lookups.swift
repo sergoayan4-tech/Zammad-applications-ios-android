@@ -15,7 +15,11 @@ struct TicketPriority: Identifiable, Decodable, Hashable {
 }
 
 /// Group lookup entry (`GET /api/v1/groups`).
-struct Group: Identifiable, Decodable, Hashable {
+///
+/// Deliberately named `ZammadGroup`, not `Group`: a top-level `Group` would
+/// shadow `SwiftUI.Group` (the module's own types win over the SDK's) and
+/// break every `Group { ... }` container in the views.
+struct ZammadGroup: Identifiable, Decodable, Hashable {
     let id: Int
     let name: String
     let active: Bool?

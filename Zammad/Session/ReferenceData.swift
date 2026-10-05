@@ -6,7 +6,7 @@ import Observation
 final class ReferenceData {
     var states: [TicketState] = []
     var priorities: [TicketPriority] = []
-    var groups: [Group] = []
+    var groups: [ZammadGroup] = []
     var loaded = false
 
     var activeStates: [TicketState] {
@@ -17,7 +17,7 @@ final class ReferenceData {
         priorities.filter { $0.active ?? true }
     }
 
-    var activeGroups: [Group] {
+    var activeGroups: [ZammadGroup] {
         groups.filter { $0.active ?? true }
     }
 
@@ -26,7 +26,7 @@ final class ReferenceData {
 
         let fetchedStates: [TicketState]? = try? await api.get("/api/v1/ticket_states")
         let fetchedPriorities: [TicketPriority]? = try? await api.get("/api/v1/ticket_priorities")
-        let fetchedGroups: [Group]? = try? await api.get("/api/v1/groups")
+        let fetchedGroups: [ZammadGroup]? = try? await api.get("/api/v1/groups")
 
         if let fetchedStates { states = fetchedStates }
         if let fetchedPriorities { priorities = fetchedPriorities }
