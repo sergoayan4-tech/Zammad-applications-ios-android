@@ -20,6 +20,24 @@ enum TicketFilter: String, CaseIterable, Identifiable {
     }
 }
 
+/// Endpoint that currently serves the ticket list.
+///
+/// The plain `GET /api/v1/tickets` index has **no server side sorting** — it
+/// returns tickets oldest first (confirmed by the Zammad maintainers), so on a
+/// busy instance page 1 is a batch of long-closed tickets and newer open ones
+/// never make it onto the screen.
+///
+/// `GET /api/v1/tickets/search` does support `sort_by`/`order_by`, so the list
+/// prefers it with `query=*` + `sort_by=updated_at&order_by=desc` (newest
+/// first, like the web UI). Backends differ: Elasticsearch installs need
+/// `query=*`, plain SQL installs return everything for an empty query — hence
+/// the fallback chain in `reload()`.
+private enum ListSource {
+    case searchAll
+    case searchEmpty
+    case index
+}
+
 /// Backs the ticket list: loading, pagination, search and filters.
 @MainActor
 @Observable
@@ -38,6 +56,7 @@ final class TicketsListModel {
     private var loadedOnce = false
     private var api: APIClient?
     private var searchTask: Task<Void, Never>?
+    private var listSource: ListSource = .searchAll
 
     private static let pageSize = 100
 
@@ -56,12 +75,25 @@ final class TicketsListModel {
     }
 
     func reload() async {
-        guard let api else { return }
+        guard api != nil else { return }
         loading = true
         error = nil
 
         do {
-            let fresh: [Ticket] = try await api.get("/api/v1/tickets", query: Self.pageQuery(1))
+            // Newest first: the plain index cannot be sorted, so go through
+            // /tickets/search. Empty results advance the fallback chain; only
+            // the last step (plain index) surfaces its errors to the UI.
+            listSource = .searchAll
+            var fresh = (try? await fetchSearchPage(1, query: "*")) ?? []
+            if fresh.isEmpty {
+                listSource = .searchEmpty
+                fresh = (try? await fetchSearchPage(1, query: "")) ?? []
+            }
+            if fresh.isEmpty {
+                listSource = .index
+                fresh = try await fetchIndexPage(1)
+            }
+
             tickets = fresh
             hasMore = fresh.count >= Self.pageSize
             page = 2
@@ -73,12 +105,21 @@ final class TicketsListModel {
     }
 
     func loadMore() async {
-        guard let api, hasMore, !loadingMore, !loading else { return }
+        guard api != nil, hasMore, !loadingMore, !loading else { return }
         loadingMore = true
         error = nil
 
         do {
-            let fresh: [Ticket] = try await api.get("/api/v1/tickets", query: Self.pageQuery(page))
+            let fresh: [Ticket]
+            switch listSource {
+            case .searchAll:
+                fresh = try await fetchSearchPage(page, query: "*")
+            case .searchEmpty:
+                fresh = try await fetchSearchPage(page, query: "")
+            case .index:
+                fresh = try await fetchIndexPage(page)
+            }
+
             let known = Set(tickets.map(\.id))
             let newItems = fresh.filter { !known.contains($0.id) }
             tickets.append(contentsOf: newItems)
@@ -162,6 +203,25 @@ final class TicketsListModel {
             searchResults = nil
         }
         searching = false
+    }
+
+    /// One page of tickets sorted newest first via the search endpoint.
+    private func fetchSearchPage(_ page: Int, query: String) async throws -> [Ticket] {
+        guard let api else { return [] }
+        return try await api.get("/api/v1/tickets/search", query: [
+            URLQueryItem(name: "query", value: query),
+            URLQueryItem(name: "sort_by", value: "updated_at"),
+            URLQueryItem(name: "order_by", value: "desc"),
+            URLQueryItem(name: "expand", value: "true"),
+            URLQueryItem(name: "per_page", value: String(Self.pageSize)),
+            URLQueryItem(name: "page", value: String(page))
+        ])
+    }
+
+    /// Last resort: the plain index, which cannot be sorted server side.
+    private func fetchIndexPage(_ page: Int) async throws -> [Ticket] {
+        guard let api else { return [] }
+        return try await api.get("/api/v1/tickets", query: Self.pageQuery(page))
     }
 
     private static func pageQuery(_ page: Int) -> [URLQueryItem] {

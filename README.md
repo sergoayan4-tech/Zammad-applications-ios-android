@@ -157,7 +157,7 @@ python Tools/generate_icon.py
 | Параметр | Значение |
 |---|---|
 | Базовый путь | `/api/v1` |
-| Список тикетов | `GET /tickets?expand=true&per_page=100&page=N` |
+| Список тикетов | `GET /tickets/search?query=*&sort_by=updated_at&order_by=desc&expand=true&per_page=100&page=N` (новые сверху). Фолбэки при пустом ответе: `query=` (SQL-бэкенд) → `GET /tickets` — сам индекс сортировать нельзя, он всегда отдаёт старые тикеты первыми |
 | Поиск | `GET /tickets/search?query=…&expand=true` |
 | Статьи | `GET /ticket_articles/by_ticket/{id}` |
 | Ответ | `POST /ticket_articles` (`ticket_id`, `body`, `type`, `sender`, `internal`) |
