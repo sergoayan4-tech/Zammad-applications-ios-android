@@ -141,12 +141,12 @@ fun TicketsScreen(
 
         OutlinedTextField(
             value = model.query,
-            onValueChange = { model.setQuery(it) },
+            onValueChange = { model.setSearchQuery(it) },
             placeholder = { Text(L10n.t("tickets.search")) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
                 if (model.query.isNotEmpty()) {
-                    IconButton(onClick = { model.setQuery("") }) {
+                    IconButton(onClick = { model.setSearchQuery("") }) {
                         Icon(Icons.Default.Close, contentDescription = L10n.t("common.close"))
                     }
                 }

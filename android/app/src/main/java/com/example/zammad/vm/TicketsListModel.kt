@@ -127,7 +127,7 @@ class TicketsListModel : ViewModel() {
     }
 
     /** Debounced server-side search (mirrors iOS `setSearchQuery`). */
-    fun setQuery(value: String) {
+    fun setSearchQuery(value: String) {
         query = value
         searchJob?.cancel()
         val trimmed = value.trim()
