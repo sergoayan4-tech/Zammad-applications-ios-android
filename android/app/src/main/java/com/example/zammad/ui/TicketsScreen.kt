@@ -112,7 +112,7 @@ fun TicketsScreen(
             ): Offset {
                 val atTop =
                     listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
-                if (source == NestedScrollSource.UserInput && available.y != 0f && atTop) {
+                if (source == NestedScrollSource.Drag && available.y != 0f && atTop) {
                     pull.drag(available.y)
                     return available
                 }

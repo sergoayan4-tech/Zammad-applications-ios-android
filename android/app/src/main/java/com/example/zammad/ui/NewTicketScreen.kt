@@ -119,18 +119,22 @@ fun NewTicketScreen(
             )
 
             Row2(
-                first = SelectField(
-                    label = L10n.t("new.priority"),
-                    value = ref.priorities.firstOrNull { it.id == model.priorityId }?.name ?: "—",
-                    options = ref.activePriorities.map { it.id to it.name },
-                    selectedId = model.priorityId
-                ) { model.priorityId = it },
-                second = SelectField(
-                    label = L10n.t("new.state"),
-                    value = ref.states.firstOrNull { it.id == model.stateId }?.name ?: "—",
-                    options = ref.activeStates.map { it.id to it.name },
-                    selectedId = model.stateId
-                ) { model.stateId = it }
+                first = {
+                    SelectField(
+                        label = L10n.t("new.priority"),
+                        value = ref.priorities.firstOrNull { it.id == model.priorityId }?.name ?: "—",
+                        options = ref.activePriorities.map { it.id to it.name },
+                        selectedId = model.priorityId
+                    ) { model.priorityId = it }
+                },
+                second = {
+                    SelectField(
+                        label = L10n.t("new.state"),
+                        value = ref.states.firstOrNull { it.id == model.stateId }?.name ?: "—",
+                        options = ref.activeStates.map { it.id to it.name },
+                        selectedId = model.stateId
+                    ) { model.stateId = it }
+                }
             )
 
             OutlinedTextField(

@@ -13,7 +13,7 @@ private val closedStateNames = setOf("closed", "removed", "merged")
 fun isClosedStateName(name: String): Boolean = closedStateNames.contains(name.lowercase())
 
 fun isClosed(ticket: Ticket): Boolean {
-    val name = ticket.state?.lowercased() ?: ""
+    val name = ticket.state?.lowercase() ?: ""
     if (name.isEmpty()) return false
     return isClosedStateName(name)
 }
@@ -64,8 +64,8 @@ fun relativeDate(iso: String?): String {
         mins < 60 * 24 * 7 -> {
             val d = mins / (60 * 24)
             when {
-                d == 1 && ru -> "вчера"
-                d == 1 -> "yesterday"
+                d == 1L && ru -> "вчера"
+                d == 1L -> "yesterday"
                 ru -> "$d дн назад"
                 else -> "${d}d ago"
             }

@@ -27,7 +27,6 @@ class NewTicketModel : ViewModel() {
     var creating by mutableStateOf(false)
         private set
     var validationKey by mutableStateOf<String?>(null)
-        private set
     var errorMessage by mutableStateOf<ApiException?>(null)
 
     fun applyDefaults(reference: ReferenceData) {
