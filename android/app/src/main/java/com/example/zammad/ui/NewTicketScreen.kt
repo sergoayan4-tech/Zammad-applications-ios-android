@@ -1,6 +1,8 @@
 package com.example.zammad.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,12 +12,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -136,6 +140,125 @@ fun NewTicketScreen(
                     ) { model.stateId = it }
                 }
             )
+
+            // ---- owner (assignee) ----
+            Column {
+                Text(
+                    L10n.t("ticket.owner"),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(4.dp))
+                Row2(
+                    first = {
+                        OutlinedButton(
+                            onClick = {
+                                model.ownerId = null
+                                model.ownerName = null
+                            },
+                            modifier = Modifier.fillMaxWidth().height(44.dp)
+                        ) {
+                            Text(
+                                L10n.t("ticket.assign.me"),
+                                fontSize = 12.sp,
+                                maxLines = 1
+                            )
+                        }
+                    },
+                    second = {
+                        OutlinedButton(
+                            onClick = {
+                                model.ownerId = 1
+                                model.ownerName = null
+                            },
+                            modifier = Modifier.fillMaxWidth().height(44.dp)
+                        ) {
+                            Text(
+                                L10n.t("ticket.assign.unassigned"),
+                                fontSize = 12.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                )
+                Spacer(Modifier.height(6.dp))
+                val ownerLabel = when {
+                    model.ownerId == null -> {
+                        val me = session.currentUser?.displayName ?: ""
+                        if (me.isEmpty()) L10n.t("ticket.assign.me")
+                        else L10n.t("ticket.assign.me") + ": " + me
+                    }
+                    model.ownerId == 1 -> L10n.t("ticket.assign.unassigned")
+                    else -> model.ownerName ?: ("#" + model.ownerId)
+                }
+                Text(
+                    ownerLabel,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = model.ownerQuery,
+                    onValueChange = {
+                        model.ownerQuery = it
+                        model.searchOwners(it, session)
+                    },
+                    placeholder = { Text(L10n.t("ticket.assign.search")) },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (model.ownersLoading) {
+                    Spacer(Modifier.height(6.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            L10n.t("common.loading"),
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else if (model.ownerQuery.isNotBlank() && model.owners.isEmpty()) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        L10n.t("ticket.assign.empty"),
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                model.owners.forEach { user ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { model.selectOwner(user) }
+                            .padding(vertical = 8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column {
+                            Text(user.displayName, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                            val email = user.email
+                            if (!email.isNullOrBlank() && email != "-") {
+                                Text(
+                                    email,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
             OutlinedTextField(
                 value = model.body,

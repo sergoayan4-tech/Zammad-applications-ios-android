@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import com.example.zammad.api.ApiClient
 import com.example.zammad.api.ApiErrorKind
 import com.example.zammad.api.ApiException
+import com.example.zammad.api.flexInt
 import com.example.zammad.api.flexString
 import com.example.zammad.api.jsonBody
 import com.example.zammad.core.L10n
@@ -191,27 +192,65 @@ class SessionStore(val prefs: Prefs) {
     // --------------------------------------------------------------- reference
 
     suspend fun loadReference() {
-        try {
-            val states = withContext(Dispatchers.IO) {
+        // Load each resource independently: one forbidden endpoint must not
+        // wipe out the whole reference (GET /groups may be admin-only).
+        val states = try {
+            withContext(Dispatchers.IO) {
                 api.getArray("/api/v1/ticket_states").map { ZammadState.fromJson(it) }
             }
-            val priorities = withContext(Dispatchers.IO) {
+        } catch (_: Exception) {
+            emptyList()
+        }
+        val priorities = try {
+            withContext(Dispatchers.IO) {
                 api.getArray("/api/v1/ticket_priorities").map { ZammadPriority.fromJson(it) }
             }
-            val groups = withContext(Dispatchers.IO) {
+        } catch (_: Exception) {
+            emptyList()
+        }
+        var groups = try {
+            withContext(Dispatchers.IO) {
                 api.getArray("/api/v1/groups").map { ZammadGroup.fromJson(it) }
             }
-            // GET /users may be forbidden for non-admins — the app still works.
-            val users = try {
-                withContext(Dispatchers.IO) {
-                    api.getArray("/api/v1/users").map { ZammadUser.fromJson(it) }
-                }
-            } catch (_: ApiException) {
-                emptyList()
+        } catch (_: Exception) {
+            emptyList()
+        }
+        if (groups.isEmpty()) {
+            groups = groupsFromTickets()
+        }
+        // GET /users may be forbidden for non-admins — the app still works.
+        val users = try {
+            withContext(Dispatchers.IO) {
+                api.getArray("/api/v1/users").map { ZammadUser.fromJson(it) }
             }
-            reference = ReferenceData(states, priorities, groups, users)
-        } catch (_: ApiException) {
-            // Keep what we already have; the ticket list still loads.
+        } catch (_: Exception) {
+            emptyList()
+        }
+        reference = ReferenceData(states, priorities, groups, users)
+    }
+
+    /**
+     * Groups taken from recent tickets — a fallback for non-admin accounts
+     * (`GET /api/v1/groups` requires the `admin.group` permission).
+     */
+    private suspend fun groupsFromTickets(): List<ZammadGroup> = withContext(Dispatchers.IO) {
+        try {
+            api.getArray(
+                "/api/v1/tickets/search",
+                listOf(
+                    "query" to "*",
+                    "sort_by" to "updated_at",
+                    "order_by" to "desc",
+                    "expand" to "true",
+                    "per_page" to "100"
+                )
+            ).mapNotNull { o ->
+                val id = o.flexInt("group_id") ?: return@mapNotNull null
+                val name = o.flexString("group")?.trim().orEmpty()
+                if (name.isEmpty() || name == "-") null else ZammadGroup(id, name, true)
+            }.distinctBy { it.id }
+        } catch (_: Exception) {
+            emptyList()
         }
     }
 

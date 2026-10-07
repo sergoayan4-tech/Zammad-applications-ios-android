@@ -4,13 +4,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.zammad.api.ApiErrorKind
 import com.example.zammad.api.ApiException
 import com.example.zammad.api.jsonBody
 import com.example.zammad.model.ReferenceData
 import com.example.zammad.model.Ticket
+import com.example.zammad.model.ZammadUser
 import com.example.zammad.session.SessionStore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
@@ -23,6 +28,16 @@ class NewTicketModel : ViewModel() {
     var groupId by mutableStateOf<Int?>(null)
     var priorityId by mutableStateOf<Int?>(null)
     var stateId by mutableStateOf<Int?>(null)
+
+    /** `null` = the creator (Zammad default), `1` = unassigned. */
+    var ownerId by mutableStateOf<Int?>(null)
+    var ownerName by mutableStateOf<String?>(null)
+    var ownerQuery by mutableStateOf("")
+    var owners by mutableStateOf<List<ZammadUser>>(emptyList())
+        private set
+    var ownersLoading by mutableStateOf(false)
+        private set
+    private var ownerJob: Job? = null
 
     var creating by mutableStateOf(false)
         private set
@@ -67,6 +82,7 @@ class NewTicketModel : ViewModel() {
                 groupId?.let { put("group_id", it) }
                 priorityId?.let { put("priority_id", it) }
                 stateId?.let { put("state_id", it) }
+                ownerId?.let { put("owner_id", it) }
                 val email = customerEmail.trim()
                 if (email.isNotEmpty()) put("customer", email)
                 put("article", JSONObject(article))
@@ -90,5 +106,41 @@ class NewTicketModel : ViewModel() {
         } finally {
             creating = false
         }
+    }
+
+    // ------------------------------------------------------- owner search
+
+    /** Picks an agent from the search results. */
+    fun selectOwner(user: ZammadUser) {
+        ownerId = user.id
+        ownerName = user.displayName
+        ownerQuery = ""
+        owners = emptyList()
+    }
+
+    /** Debounced owner lookup (`/api/v1/users/search`). */
+    fun searchOwners(query: String, session: SessionStore) {
+        ownerJob?.cancel()
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) {
+            owners = emptyList()
+            ownersLoading = false
+            return
+        }
+        ownersLoading = true
+        ownerJob = viewModelScope.launch {
+            delay(300)
+            val res = session.searchUsers(trimmed)
+            owners = res.filter { user ->
+                user.id != 1 && user.active &&
+                    (user.login ?: "") != "-" && (user.firstname ?: "") != "-"
+            }
+            ownersLoading = false
+        }
+    }
+
+    override fun onCleared() {
+        ownerJob?.cancel()
+        super.onCleared()
     }
 }

@@ -46,6 +46,71 @@ struct NewTicketView: View {
                 }
             }
 
+            Section(prefs.t("ticket.owner")) {
+                Text(ownerLabel)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 10) {
+                    Button {
+                        model.ownerId = nil
+                        model.ownerName = nil
+                    } label: {
+                        Text(prefs.t("ticket.assign.me"))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(model.ownerId == nil ? .accentColor : nil)
+
+                    Button {
+                        model.ownerId = 1
+                        model.ownerName = nil
+                    } label: {
+                        Text(prefs.t("ticket.assign.unassigned"))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(model.ownerId == 1 ? .accentColor : nil)
+                }
+
+                TextField(prefs.t("ticket.assign.search"), text: $model.ownerQuery)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .onChange(of: model.ownerQuery) { _, newValue in
+                        model.searchOwners(newValue, api: session.api)
+                    }
+
+                if model.ownersLoading {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                        Text(prefs.t("common.loading"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                } else if !model.ownerQuery.trimmed.isEmpty && model.owners.isEmpty {
+                    Text(prefs.t("ticket.assign.empty"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                ForEach(model.owners) { user in
+                    Button {
+                        model.selectOwner(user)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(user.displayName)
+                            if !user.subtitle.isEmpty {
+                                Text(user.subtitle)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
             Section(prefs.t("new.message")) {
                 TextField(prefs.t("new.message.placeholder"), text: $model.body, axis: .vertical)
                     .lineLimit(4...10)
@@ -90,6 +155,17 @@ struct NewTicketView: View {
         .task {
             model.applyDefaults(from: session.reference)
         }
+    }
+
+    private var ownerLabel: String {
+        if let ownerId = model.ownerId {
+            if ownerId == 1 {
+                return prefs.t("ticket.assign.unassigned")
+            }
+            return model.ownerName ?? "#\(ownerId)"
+        }
+        let me = session.currentUser?.displayName ?? ""
+        return prefs.t("ticket.assign.me") + (me.isEmpty ? "" : ": \(me)")
     }
 
     private func submit() async {

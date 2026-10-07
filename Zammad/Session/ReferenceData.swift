@@ -26,12 +26,45 @@ final class ReferenceData {
 
         let fetchedStates: [TicketState]? = try? await api.get("/api/v1/ticket_states")
         let fetchedPriorities: [TicketPriority]? = try? await api.get("/api/v1/ticket_priorities")
-        let fetchedGroups: [ZammadGroup]? = try? await api.get("/api/v1/groups")
+        var fetchedGroups: [ZammadGroup]? = try? await api.get("/api/v1/groups")
+
+        // GET /api/v1/groups requires the `admin.group` permission: agents get
+        // 403 and the group picker turns out empty. Recover the visible groups
+        // from the tickets themselves (group_id + group name via expand).
+        if fetchedGroups?.isEmpty ?? true {
+            fetchedGroups = await groupsFromTickets(api: api)
+        }
 
         if let fetchedStates { states = fetchedStates }
         if let fetchedPriorities { priorities = fetchedPriorities }
         if let fetchedGroups { groups = fetchedGroups }
         loaded = true
+    }
+
+    /// Groups taken from recent tickets — a fallback for non-admin accounts.
+    private func groupsFromTickets(api: APIClient) async -> [ZammadGroup]? {
+        let tickets: [Ticket]? = try? await api.get(
+            "/api/v1/tickets/search",
+            query: [
+                URLQueryItem(name: "query", value: "*"),
+                URLQueryItem(name: "sort_by", value: "updated_at"),
+                URLQueryItem(name: "order_by", value: "desc"),
+                URLQueryItem(name: "expand", value: "true"),
+                URLQueryItem(name: "per_page", value: "100")
+            ]
+        )
+        guard let tickets else { return nil }
+
+        var seen = Set<Int>()
+        var result: [ZammadGroup] = []
+        for ticket in tickets {
+            guard let id = ticket.groupId,
+                  let name = ticket.group?.trimmed,
+                  !name.isEmpty, name != "-" else { continue }
+            guard seen.insert(id).inserted else { continue }
+            result.append(ZammadGroup(id: id, name: name, active: true))
+        }
+        return result.isEmpty ? nil : result
     }
 
     func reset() {
