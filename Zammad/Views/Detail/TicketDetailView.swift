@@ -203,7 +203,7 @@ struct TicketDetailView: View {
 
     private static func sameDay(_ lhs: Date?, _ rhs: Date?) -> Bool {
         guard let lhs, let rhs else { return false }
-        return Calendar.current.isDate(lhs, inSameDay: rhs)
+        return Calendar.current.isDate(lhs, inSameDayAs: rhs)
     }
 
     private func dateSeparator(_ date: Date?) -> some View {
