@@ -12,9 +12,9 @@ private final class AttributedBox {
 struct HTMLText: View {
     private let attributed: AttributedString
 
-    init(_ text: String, contentType: String?) {
+    init(_ text: String, contentType: String?, tint: Color? = nil) {
         let isHTML = (contentType ?? "text/plain").lowercased().contains("html")
-        attributed = Self.render(isHTML ? text : Self.plainToHTML(text))
+        attributed = Self.render(isHTML ? text : Self.plainToHTML(text), tint: tint)
     }
 
     var body: some View {
@@ -31,17 +31,17 @@ struct HTMLText: View {
         return cache
     }()
 
-    private static func render(_ markup: String) -> AttributedString {
-        let key = markup as NSString
+    private static func render(_ markup: String, tint: Color?) -> AttributedString {
+        let key = (markup + (tint == nil ? "|primary" : "|tint")) as NSString
         if let cached = cache.object(forKey: key) {
             return cached.value
         }
-        let value = convert(markup)
+        let value = convert(markup, tint: tint)
         cache.setObject(AttributedBox(value), forKey: key)
         return value
     }
 
-    private static func convert(_ html: String) -> AttributedString {
+    private static func convert(_ html: String, tint: Color?) -> AttributedString {
         let document = "<div style=\"font-family:-apple-system,'HelveticaNeue',sans-serif;font-size:15px;line-height:1.35;\">\(html)</div>"
 
         guard let data = document.data(using: .utf8),
@@ -59,17 +59,19 @@ struct HTMLText: View {
         var result = AttributedString(native)
 
         // HTML import brings explicit colors that do not adapt to Dark Mode.
-        result.foregroundColor = Color.primary
+        result.foregroundColor = tint ?? Color.primary
 
-        // Give links their accent color back.
-        var linkRanges: [Range<AttributedString.Index>] = []
-        for (link, range) in result.runs[\.link] {
-            if (link as URL?) != nil {
-                linkRanges.append(range)
+        // Give links their accent color back (only on the default tint).
+        if tint == nil {
+            var linkRanges: [Range<AttributedString.Index>] = []
+            for (link, range) in result.runs[\.link] {
+                if (link as URL?) != nil {
+                    linkRanges.append(range)
+                }
             }
-        }
-        for range in linkRanges {
-            result[range].foregroundColor = Color.accentColor
+            for range in linkRanges {
+                result[range].foregroundColor = Color.accentColor
+            }
         }
 
         return result

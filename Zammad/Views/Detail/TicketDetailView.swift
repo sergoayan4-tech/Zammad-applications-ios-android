@@ -15,63 +15,75 @@ struct TicketDetailView: View {
     }
 
     var body: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 16) {
-                header
-                messagesHeader
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 16) {
+                    header
+                    messagesHeader
 
-                if model.loading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 8)
-                } else if model.articles.isEmpty {
-                    Text(prefs.t("ticket.noMessages"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(model.articles) { article in
-                        ArticleBubble(
-                            article: article,
-                            prefs: prefs,
-                            onAttachment: { attachment in
-                                download(attachment, from: article)
+                    if model.loading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 8)
+                    } else if model.articles.isEmpty {
+                        Text(prefs.t("ticket.noMessages"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(Array(model.articles.enumerated()), id: \.element.id) { index, article in
+                            if index == 0 || !Self.sameDay(
+                                model.articles[index - 1].createdAt,
+                                article.createdAt
+                            ) {
+                                dateSeparator(article.createdAt)
                             }
-                        )
+                            ArticleBubble(
+                                article: article,
+                                prefs: prefs,
+                                onAttachment: { attachment in
+                                    download(attachment, from: article)
+                                }
+                            )
+                            .id(article.id)
+                        }
                     }
                 }
+                .padding()
             }
-            .padding()
-        }
-        .scrollDismissesKeyboard(.interactively)
-        .background(Color(uiColor: .systemGroupedBackground))
-        .navigationTitle(model.ticket.displayNumber)
-        .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom, spacing: 0) { composer }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showActions = true
-                } label: {
-                    Image(systemName: "ellipsis.circle")
+            .scrollDismissesKeyboard(.interactively)
+            .background(Color(uiColor: .systemGroupedBackground))
+            .navigationTitle(model.ticket.displayNumber)
+            .navigationBarTitleDisplayMode(.inline)
+            .safeAreaInset(edge: .bottom, spacing: 0) { composer }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showActions = true
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                    .accessibilityLabel(prefs.t("ticket.actions"))
                 }
-                .accessibilityLabel(prefs.t("ticket.actions"))
             }
-        }
-        .overlay {
-            if model.updating {
-                ProgressView()
-                    .padding(22)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .overlay {
+                if model.updating {
+                    ProgressView()
+                        .padding(22)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                }
             }
-        }
-        .task {
-            await model.load(api: session.api)
-        }
-        .sheet(isPresented: $showActions) {
-            TicketActionsSheet(model: model)
-        }
-        .sheet(item: $preview) { item in
-            QuickLookPreview(url: item.url)
+            .task {
+                await model.load(api: session.api)
+                if let last = model.articles.last?.id {
+                    proxy.scrollTo(last, anchor: .bottom)
+                }
+            }
+            .sheet(isPresented: $showActions) {
+                TicketActionsSheet(model: model)
+            }
+            .sheet(item: $preview) { item in
+                QuickLookPreview(url: item.url)
+            }
         }
     }
 
@@ -181,6 +193,28 @@ struct TicketDetailView: View {
     }
 
     // MARK: - Helpers
+
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
+
+    private static func sameDay(_ lhs: Date?, _ rhs: Date?) -> Bool {
+        guard let lhs, let rhs else { return false }
+        return Calendar.current.isDate(lhs, inSameDay: rhs)
+    }
+
+    private func dateSeparator(_ date: Date?) -> some View {
+        Text(date.map { Self.dayFormatter.string(from: $0) } ?? "")
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 3)
+            .background(Color(uiColor: .secondarySystemBackground), in: Capsule())
+            .frame(maxWidth: .infinity)
+    }
 
     private func download(_ attachment: ArticleAttachment, from article: TicketArticle) {
         Task {

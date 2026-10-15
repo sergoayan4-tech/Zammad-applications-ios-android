@@ -1,150 +1,153 @@
-# Zammad for iOS
+# HelpDesk — Zammad client for iOS & Android
 
-Клиент системы заявок (helpdesk) **Zammad** для iOS, написанный на SwiftUI.
-Приложение подключается напрямую к вашему серверу Zammad по REST API — без
-посредников и бэкендов.
+A mobile client for the **Zammad** ticketing system (helpdesk): SwiftUI for iOS
+and Kotlin + Jetpack Compose for Android. The app talks directly to your
+Zammad server over its REST API — no middlewares or backends of our own.
 
-![Swift](https://img.shields.io/badge/Swift-5.9-orange) ![iOS](https://img.shields.io/badge/iOS-17.0%2B-blue)
-
----
-
-## Возможности
-
-**Авторизация — двумя способами:**
-
-1. **Персональный API-токен** (рекомендуется) — `Authorization: Token token=…`
-2. **Логин + пароль** — пароль сначала обменивается на токен через
-   `POST /api/v1/signin`, а если сервер это не разрешает, используется HTTP Basic
-
-Секреты (токен/пароль) хранятся в **Keychain**, адрес сервера и режим — в
-UserDefaults. При каждом запуске соединение восстанавливается автоматически.
-
-**Основные функции (всё берётся из самого Zammad):**
-
-- список тикетов с пагинацией, тянем-обнови (pull-to-refresh) и быстрыми
-  фильтрами: *Все / Открытые / Мои / Закрытые*
-- поиск по тикетам — серверный (`/api/v1/tickets/search`) с локальным запасным
-  вариантом, если поиск на сервере недоступен
-- карточка тикета: статус, приоритет, группа, ответственный, клиент,
-  организация, даты, счётчики
-- вся переписка по тикету (статьи Zammad) с рендерингом HTML, вложения
-  скачиваются и открываются через QuickLook
-- **ответ на тикет** — публичный или внутренняя заметка (переключатель над
-  полем ввода)
-- **создание тикета**: тема, группа, клиент (email), приоритет, статус и первое
-  сообщение
-- действия с тикетом: смена статуса / приоритета / группы, назначение на себя,
-  снятие назначения, выбор ответственного из списка сотрудников
-- настройки: **язык интерфейса (Русский / English / Системный)**, тёмная и
-  светлая темы, сведения о подключении, отключение от сервера
-
-Язык переключается **внутри приложения без перезапуска**: строки лежат в
-таблицах `en`/`ru` в файле `Zammad/Core/Localization.swift`.
+![Swift](https://img.shields.io/badge/Swift-5.9-orange) ![iOS](https://img.shields.io/badge/iOS-17.0%2B-blue) ![Android](https://img.shields.io/badge/Android-8.0%2B-green)
 
 ---
 
-## Структура проекта
+## Features
+
+**Two ways to sign in:**
+
+1. **Personal API token** (recommended) — `Authorization: Token token=…`
+2. **Login + password** — the password is exchanged for a token via
+   `POST /api/v1/signin`, falling back to HTTP Basic if the server forbids it
+
+Secrets (token/password) are stored in the **Keychain** (iOS) or
+SharedPreferences (Android); the server URL and mode live in UserDefaults/NSDefaults.
+The connection is restored automatically on every launch.
+
+**Core functionality (everything comes from Zammad itself):**
+
+- ticket list with pagination, pull-to-refresh and quick filters:
+  *All / Open / Mine / Closed*
+- ticket search — server-side (`/api/v1/tickets/search`) with a local fallback
+  when server search is unavailable
+- ticket card: state, priority, group, owner, customer, organization,
+  dates, counters
+- full conversation rendered as a **chat** — bubbles left/right like the
+  Zammad web UI, HTML rendering, day separators, attachments download and
+  open with QuickLook (iOS) or the system viewer (Android)
+- **reply to a ticket** — public or internal note (toggle above the input)
+- **create a ticket**: title, group, customer (email), owner, priority, state
+  and the first message
+- ticket actions: change state / priority / group, assign to me,
+  unassign, pick an owner from the agent list
+- settings: **interface language (Русский / English / System)**, dark and
+  light themes, connection details, disconnect from the server
+
+The language switches **inside the app without a restart**: strings live in
+`en`/`ru` tables (`Zammad/Core/Localization.swift`, Android
+`core/Localization.kt`).
+
+---
+
+## Project layout
 
 ```
 Zammad/
-├── Zammad.xcodeproj/           # сгенерированный Xcode-проект
+├── Zammad.xcodeproj/           # generated Xcode project
 ├── Support/
-│   └── Info.plist              # вне синхронизируемой папки, ATS разрешён
-├── Zammad/                     # исходники Swift
-│   ├── ZammadApp.swift         # точка входа, окружение (prefs + session)
-│   ├── RootView.swift          # splash → подключение → основной экран
-│   ├── Core/                   # язык, настройки, Keychain, хелперы
-│   ├── API/                    # APIClient, авторизация, ошибки
-│   ├── Models/                 # декодирование ответов Zammad
-│   ├── Session/                # состояние подключения, справочники
-│   ├── ViewModels/             # логика списков, карточки, создания
-│   └── Views/                  # экраны SwiftUI
+│   └── Info.plist              # outside the synced folder, ATS allowed
+├── Zammad/                     # Swift sources
+│   ├── ZammadApp.swift         # entry point, environment (prefs + session)
+│   ├── RootView.swift          # splash → connect → main screen
+│   ├── Core/                   # language, settings, Keychain, helpers
+│   ├── API/                    # APIClient, auth, errors
+│   ├── Models/                 # Zammad response decoding
+│   ├── Session/                # connection state, reference data
+│   ├── ViewModels/             # list, detail, create logic
+│   └── Views/                  # SwiftUI screens
+├── android/                    # Kotlin + Jetpack Compose app
 └── Tools/
-    ├── generate_xcode_project.py   # генератор project.pbxproj
-    ├── generate_icon.py            # генератор иконки приложения
-    └── check_localization.py       # сверка ключей перевода
+    ├── generate_xcode_project.py   # project.pbxproj generator
+    ├── generate_icon.py            # app icon generator
+    └── check_localization.py       # translation key checker
 ```
 
 ---
 
-## Сборка
+## Building
 
-> Проект собирается **только на macOS** с установленным Xcode 16+
-> (iOS-разработка на Windows невозможна).
+> The iOS project builds **only on macOS** with Xcode 16+
+> (iOS development is not possible on Windows).
 
-1. Перенесите папку `Zammad/` на Mac (например, через Git, AirDrop или диск).
-2. Откройте `Zammad.xcodeproj` в Xcode.
-3. Выберите схему **Zammad** и симулятор (например, *iPhone 16*).
-4. Нажмите **⌘R**.
+1. Copy the `Zammad/` folder to a Mac (git, AirDrop or a drive will do).
+2. Open `Zammad.xcodeproj` in Xcode.
+3. Select the **Zammad** scheme and a simulator (e.g. *iPhone 16*).
+4. Press **⌘R**.
 
-### Запуск на реальном устройстве
+### Running on a real device
 
-1. В Xcode: проект **Zammad** → вкладка *Signing & Capabilities*.
-2. Включите *Automatically manage signing* и выберите свою команду
+1. In Xcode: project **Zammad** → *Signing & Capabilities* tab.
+2. Enable *Automatically manage signing* and pick your team
    (Apple ID → *Team*).
-3. При необходимости замените `com.example.zammad.ios` на свой Bundle ID.
-4. Подключите iPhone и запустите (⌘R).
+3. Replace `com.example.zammad.ios` with your own Bundle ID if needed.
+4. Connect the iPhone and run (⌘R).
 
-Без команды подписи приложение запускается **только в симуляторе** — это
-нормально для разработки.
+Without a signing team the app runs **in the simulator only** — that is
+normal for development.
 
-### Установка на iPhone с Windows-компьютера
+### Installing on an iPhone from a Windows PC
 
-Если под рукой нет Mac — воспользуйтесь готовым workflow **GitHub Actions**
-(`.github/workflows/build-ipa.yml`): он собирает неподписанный `.ipa` в облаке,
-после чего его достаточно установить на iPhone через **AltStore** или
-**Sideloadly** (бесплатный Apple ID, подпись живёт 7 дней).
+With no Mac at hand, use the **GitHub Actions** workflow
+(`.github/workflows/build-ipa.yml`): it builds an unsigned `.ipa` in the
+cloud, which you then install on the iPhone with **AltStore** or
+**Sideloadly** (free Apple ID, the signature lives for 7 days).
 
-Пошаговая инструкция: **[INSTALL.md](INSTALL.md)** — загрузка проекта на GitHub,
-запуск сборки в облаке и установка на телефон.
+Step-by-step guide: **[INSTALL.md](INSTALL.md)** — pushing the project to
+GitHub, running the cloud build and installing it on the phone.
 
 ---
 
-## Подключение к серверу
+## Connecting to a server
 
-На экране подключения введите адрес вашего хелпдеска, например:
+On the connect screen enter your helpdesk address, e.g.:
 
 ```
 https://help.example.com
 ```
 
-и выберите способ авторизации.
+and pick an authentication method.
 
-### Способ 1 — персональный API-токен (рекомендуется)
+### Method 1 — personal API token (recommended)
 
-1. Войдите в Zammad в браузере.
-2. Откройте профиль → **Personal access tokens** (Профиль → Персональные токены).
-3. Создайте токен и скопируйте его.
-4. Вставьте в поле *Персональный токен*.
+1. Log in to Zammad in a browser.
+2. Open your profile → **Personal access tokens**.
+3. Create a token and copy it.
+4. Paste it into the *Personal token* field.
 
-Токен передаётся заголовком `Authorization: Token token=…`.
+The token is sent as `Authorization: Token token=…`.
 
-### Способ 2 — логин и пароль
+### Method 2 — login and password
 
-Укажите логин и пароль от учётной записи Zammad. Приложение сначала попытается
-обменять их на временный API-токен (`POST /api/v1/signin`); если сервер это
-запрещает — будет использован HTTP Basic. Пароль хранится в Keychain.
+Provide your Zammad account credentials. The app first tries to exchange
+them for a temporary API token (`POST /api/v1/signin`); if the server
+forbids that, HTTP Basic is used. The password is stored in the Keychain.
 
 ---
 
-## Добавление новых файлов
+## Adding new files
 
-`project.pbxproj` генерируется скриптом. После добавления/удаления Swift-файлов
-в папке `Zammad/Zammad/` выполните на Mac или на Windows (нужен Python 3):
+`project.pbxproj` is generated by a script. After adding/removing Swift
+files in `Zammad/Zammad/`, run on macOS or Windows (Python 3 required):
 
 ```bash
 python Tools/generate_xcode_project.py
 ```
 
-и перезапустите Xcode (File → Reload Packages / Close & Open project).
+and restart Xcode (File → Reload Packages / Close & Open project).
 
-Проверка переводов:
+Translation check:
 
 ```bash
 python Tools/check_localization.py
 ```
 
-Перегенерация иконки (1024×1024, PNG без внешних зависимостей):
+Icon regeneration (1024×1024, PNG, no external dependencies):
 
 ```bash
 python Tools/generate_icon.py
@@ -152,69 +155,73 @@ python Tools/generate_icon.py
 
 ---
 
-## Настройки подключения к API
+## API settings
 
-| Параметр | Значение |
+| Parameter | Value |
 |---|---|
-| Базовый путь | `/api/v1` |
-| Список тикетов | `GET /tickets/search?query=*&sort_by=updated_at&order_by=desc&expand=true&per_page=100&page=N` (новые сверху). Фолбэки при пустом ответе: `query=` (SQL-бэкенд) → `GET /tickets` — сам индекс сортировать нельзя, он всегда отдаёт старые тикеты первыми |
-| Поиск | `GET /tickets/search?query=…&expand=true` |
-| Статьи | `GET /ticket_articles/by_ticket/{id}` |
-| Ответ | `POST /ticket_articles` (`ticket_id`, `body`, `type`, `sender`, `internal`) |
-| Создание | `POST /tickets` (`title`, `group_id`, `article{…}`) |
-| Обновление | `PUT /tickets/{id}` (`state_id`, `priority_id`, `group_id`, `owner_id`) |
-| Справочники | `GET /ticket_states`, `/ticket_priorities`, `/groups`, `/users` |
-| Вложения | `GET /ticket_attachment/{ticket}/{article}/{attachment}` |
+| Base path | `/api/v1` |
+| Ticket list | `GET /tickets/search?query=*&sort_by=updated_at&order_by=desc&expand=true&per_page=100&page=N` (newest first). Fallbacks on an empty response: `query=` (SQL backend) → `GET /tickets` — the index itself cannot be sorted, it always returns the oldest tickets first |
+| Search | `GET /tickets/search?query=…&expand=true` |
+| Articles | `GET /ticket_articles/by_ticket/{id}` |
+| Reply | `POST /ticket_articles` (`ticket_id`, `body`, `type`, `sender`, `internal`) |
+| Create | `POST /tickets` (`title`, `group_id`, `owner_id`, `article{…}`) |
+| Update | `PUT /tickets/{id}` (`state_id`, `priority_id`, `group_id`, `owner_id`) |
+| Lookups | `GET /ticket_states`, `/ticket_priorities`, `/groups`, `/users` |
+| Attachments | `GET /ticket_attachment/{ticket}/{article}/{attachment}` |
+
+> `GET /api/v1/groups` requires the `admin.group` permission. For regular
+> agents the app rebuilds the group list from the tickets themselves
+> (`group_id` + group name via `expand=true`).
 
 ---
 
-## Известные ограничения
+## Known limitations
 
-- Вложения можно **скачивать и открывать**, но отправлять ответ с файлом пока
-  нельзя (создание статей с вложениями не реализовано).
-- «Не назначен» при назначении ответственного отправляет `owner_id = 1`
-  (стандартный системный пользователь `-` в Zammad).
-- Отчёты, знания (knowledge base), клиенты и другие разделы Zammad в приложении
-  не отображаются — только тикеты.
-
----
-
-## Требования
-
-- iOS 17.0+
-- Xcode 16+ (для сборки)
-- Сервер Zammad 6.x с включённым REST API
+- Attachments can be **downloaded and opened**, but a reply with a file is
+  not yet possible (creating articles with attachments is not implemented).
+- "Unassigned" when picking an owner sends `owner_id = 1`
+  (the standard system user `-` in Zammad).
+- Reports, knowledge base, customers and other Zammad sections are not shown —
+  only tickets.
 
 ---
 
-## Android-версия
+## Requirements
 
-Тот же клиент написан и для Android — **Kotlin + Jetpack Compose**, папка
-`android/` в этом же репозитории. Функционально это паритет с iOS:
+- iOS 17.0+ / Android 8.0+
+- Xcode 16+ (iOS builds)
+- A Zammad 6.x server with the REST API enabled
 
-- два способа входа (API-токен или логин/пароль со сбросом на HTTP Basic);
-- список тикетов с фильтрами **Открытые / Закрытые / Все / Мои**, серверным
-  поиском с дебаунсом, пагинацией «Показать ещё» и pull-to-refresh;
-- карточка тикета, переписка, публичный ответ / внутренняя заметка;
-- создание тикета, действия: статус, приоритет, группа, назначение на себя и
-  выбор сотрудника из списка;
-- настройки: язык (Русский / English / Системный), тема, отключение;
-- вложения скачиваются в «Загрузки» через DownloadManager.
+---
 
-**Сборка APK** — workflow `.github/workflows/build-apk.yml`
-(`macos` не нужен, собирается на `ubuntu-latest`):
+## Android version
 
-1. Сделайте push (изменения в `android/**`).
-2. Откройте **Actions** → вкладка *Build APK (Android)*.
-3. Когда сборка зелёная — скачайте артефакт **Zammad-apk**
-   (файл `app-debug.apk`).
+The same client is written for Android — **Kotlin + Jetpack Compose**, the
+`android/` folder in this repository. It is at feature parity with iOS:
 
-**Установка на телефон:**
+- two sign-in methods (API token or login/password with HTTP Basic fallback);
+- ticket list with **Open / Closed / All / Mine** filters, debounced
+  server-side search, "Show more" pagination and pull-to-refresh;
+- ticket card, chat-style conversation, public reply / internal note;
+- ticket creation, actions: state, priority, group, assign to me and
+  picking an agent as owner;
+- settings: language (Русский / English / System), theme, disconnect;
+- attachments are downloaded to "Downloads" via DownloadManager.
 
-1. Скопируйте `app-debug.apk` на Android-телефон.
-2. Откройте файл → разрешите установку из неизвестных источников
-   (настройки Android → защита → установка из незнакомых приложений).
-3. Установите и откройте — вход такой же, как в iOS-версии.
+**APK build** — the `.github/workflows/build-apk.yml` workflow
+(no macOS needed, it runs on `ubuntu-latest`):
 
-Сборка локально: `cd android && gradle assembleDebug` (нужен JDK 17 +
-Android SDK; проще собрать в облаке).
+1. Push changes touching `android/**`.
+2. Open **Actions** → the *Build APK (Android)* tab.
+3. When the build is green, download the **Zammad-apk** artifact
+   (file `app-debug.apk`).
+
+**Installing on a phone:**
+
+1. Copy `app-debug.apk` to the Android phone.
+2. Open the file → allow installation from unknown sources
+   (Android settings → security → install unknown apps).
+3. Install and open — sign-in works the same as in the iOS version.
+
+Local build: `cd android && gradle assembleDebug` (needs JDK 17 +
+Android SDK; building in the cloud is easier).

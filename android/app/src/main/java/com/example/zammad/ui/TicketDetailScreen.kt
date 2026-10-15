@@ -20,7 +20,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -53,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,6 +73,9 @@ import com.example.zammad.model.ArticleAttachment
 import com.example.zammad.model.TicketArticle
 import com.example.zammad.session.SessionStore
 import com.example.zammad.vm.TicketDetailModel
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlinx.coroutines.launch
 
 /** Full-screen ticket detail: header, articles, composer, actions sheet. */
@@ -82,10 +88,19 @@ fun TicketDetailScreen(
 ) {
     val scope = rememberCoroutineScope()
     var showActions by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
 
     LaunchedEffect(Unit) {
         model.configure(session)
         model.load()
+    }
+
+    // Chat behaviour: jump to the newest message once articles arrive.
+    LaunchedEffect(model.articles.size) {
+        if (model.articles.isNotEmpty()) {
+            // Two fixed items sit above the articles: header card + "Messages".
+            listState.scrollToItem(model.articles.size + 1)
+        }
     }
 
     Scaffold(
@@ -137,6 +152,7 @@ fun TicketDetailScreen(
             val ticket = model.ticket
             val ref = session.reference
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(14.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -256,8 +272,14 @@ fun TicketDetailScreen(
                 }
 
                 items(model.articles.size) { index ->
+                    val article = model.articles[index]
+                    if (index == 0 ||
+                        dayKey(model.articles[index - 1].createdAt) != dayKey(article.createdAt)
+                    ) {
+                        DaySeparator(article.createdAt)
+                    }
                     ArticleBubble(
-                        article = model.articles[index],
+                        article = article,
                         session = session
                     )
                 }
@@ -277,9 +299,41 @@ fun TicketDetailScreen(
 /** One message bubble (customer left, agent right, internal highlighted). */
 @Composable
 private fun ArticleBubble(article: TicketArticle, session: SessionStore) {
-    val fromAgent = !article.isFromCustomer && !article.isFromSystem
-    val internal = article.isInternal == true
     val context = LocalContext.current
+
+    // System entries: a compact centered line instead of a bubble (Zammad web).
+    if (article.isFromSystem) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 2.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                relativeDate(article.createdAt),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            val systemBody = plainText(article.body)
+            if (systemBody.isNotEmpty()) {
+                Text(
+                    systemBody,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        return
+    }
+
+    val fromAgent = !article.isFromCustomer
+    val internal = article.isInternal == true
+    val bodyColor = when {
+        internal -> MaterialTheme.colorScheme.onTertiaryContainer
+        fromAgent -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -309,11 +363,11 @@ private fun ArticleBubble(article: TicketArticle, session: SessionStore) {
             ),
             color = when {
                 internal -> MaterialTheme.colorScheme.tertiaryContainer
-                fromAgent -> MaterialTheme.colorScheme.primaryContainer
-                article.isFromSystem -> MaterialTheme.colorScheme.surfaceVariant
+                fromAgent -> MaterialTheme.colorScheme.primary
                 else -> MaterialTheme.colorScheme.surfaceVariant
             },
-            modifier = Modifier.fillMaxWidth(0.92f)
+            // Chat proportions: the bubble never spans the whole row.
+            modifier = Modifier.fillMaxWidth(0.78f)
         ) {
             Column(Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
                 if (internal) {
@@ -327,7 +381,7 @@ private fun ArticleBubble(article: TicketArticle, session: SessionStore) {
                 }
                 val body = plainText(article.body)
                 if (body.isNotEmpty()) {
-                    Text(body, fontSize = 14.sp, lineHeight = 19.sp)
+                    Text(body, fontSize = 14.sp, lineHeight = 19.sp, color = bodyColor)
                 }
                 if (article.attachments.isNotEmpty()) {
                     Spacer(Modifier.height(8.dp))
@@ -340,7 +394,7 @@ private fun ArticleBubble(article: TicketArticle, session: SessionStore) {
                                 Icons.Default.AttachFile,
                                 contentDescription = null,
                                 modifier = Modifier.size(15.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = bodyColor.copy(alpha = 0.7f)
                             )
                             Spacer(Modifier.width(5.dp))
                             TextButton(
@@ -352,7 +406,11 @@ private fun ArticleBubble(article: TicketArticle, session: SessionStore) {
                                 Text(
                                     att.filename,
                                     fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = if (fromAgent && !internal) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        MaterialTheme.colorScheme.primary
+                                    },
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -363,6 +421,36 @@ private fun ArticleBubble(article: TicketArticle, session: SessionStore) {
             }
         }
     }
+}
+
+/** YYYY-MM-DD part of an ISO timestamp — used to split days. */
+private fun dayKey(iso: String?): String = iso?.take(10) ?: ""
+
+/** Centered capsule between messages of different days. */
+@Composable
+private fun DaySeparator(iso: String?) {
+    val day = dayKey(iso)
+    if (day.isEmpty()) return
+    val label = try {
+        val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(day) ?: day
+        DateFormat.getDateInstance(DateFormat.MEDIUM).format(date)
+    } catch (_: Exception) {
+        day
+    }
+    Text(
+        label,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentSize(Alignment.Center)
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                RoundedCornerShape(50)
+            )
+            .padding(horizontal = 10.dp, vertical = 3.dp)
+    )
 }
 
 private fun downloadAttachment(

@@ -1,25 +1,26 @@
-# Установка на iPhone с Windows-компьютера
+# Installing on an iPhone from a Windows PC
 
-Полный путь без Mac: код хранится на **GitHub**, собирает **облачный Mac (GitHub Actions)**,
-вы скачиваете готовый `.ipa` и ставите его на iPhone с Windows-подписью **AltStore** или **Sideloadly**.
+The full path without a Mac: the code lives on **GitHub**, a **cloud Mac (GitHub Actions)**
+builds it, you download the ready `.ipa` and install it on the iPhone with a Windows
+signing tool — **AltStore** or **Sideloadly**.
 
-## Что нужно
+## What you need
 
-- Apple ID (бесплатный, с двухфакторной аутентификацией)
-- Аккаунт GitHub
-- Windows-ПК, кабель для iPhone, сам iPhone (iOS 17+)
-- Свободных денег: 0 $
+- Apple ID (free, with two-factor authentication enabled)
+- A GitHub account
+- A Windows PC, a cable, and the iPhone itself (iOS 17+)
+- Money spent: $0
 
 ---
 
-## Шаг 1. Загрузить проект на GitHub
+## Step 1. Push the project to GitHub
 
-### Вариант А — Git (команды)
+### Option A — Git (commands)
 
-1. Установите **Git for Windows**: <https://git-scm.com/download/win> (настройки — по умолчанию).
-2. Создайте репозиторий: <https://github.com/new> → имя `Zammad`, тип **Public**
-   (публичный — сборки бесплатны; можно создать и без README/.gitignore) → **Create repository**.
-3. Откройте PowerShell и выполните построчно (впишите свой логин):
+1. Install **Git for Windows**: <https://git-scm.com/download/win> (keep the defaults).
+2. Create a repository: <https://github.com/new> → name it `Zammad`, type **Public**
+   (public — builds are free; you can skip the README/.gitignore) → **Create repository**.
+3. Open PowerShell and run line by line (substitute your own username):
 
 ```powershell
 cd "C:\Users\Serg\Documents\Default Project\Zammad"
@@ -27,85 +28,88 @@ git init
 git add .
 git commit -m "Zammad iOS app"
 git branch -M main
-git remote add origin https://github.com/ВАШ-ЛОГИН/Zammad.git
+git remote add origin https://github.com/YOUR-LOGIN/Zammad.git
 git push -u origin main
 ```
 
-При первом `push` откроется окно входа в GitHub в браузере — войдите.
+On the first `push` a browser window opens for GitHub sign-in — log in.
 
-### Вариант Б — GitHub Desktop (без команд)
+### Option B — GitHub Desktop (no commands)
 
-1. Установите **GitHub Desktop**: <https://desktop.github.com> → войдите в аккаунт.
-2. **File → Add Local Repository → Add** → выберите папку `...\Default Project\Zammad`.
-   Если программа попросит создать репозиторий — согласитесь (создаст его в этой же папке).
-3. Внизу окна выберите **Public** → **Publish repository** (галочки на «Keep this code private» снимите).
-
----
-
-## Шаг 2. Собрать .ipa в облаке
-
-1. Откройте свой репозиторий на GitHub → вкладка **Actions**.
-   Если спросит — нажмите **I understand my workflows, go ahead and enable them**.
-2. Слева выберите **Build IPA** → справа **Run workflow** → ветка `main` → зелёная кнопка **Run workflow**.
-3. Подождите 5–15 минут до зелёной галочки.
-   - Красный крестик → откройте запуск, скопируйте лог упавшего шага (пришлите мне).
-4. Откройте завершённый запуск → внизу раздел **Artifacts** → **Zammad-ipa** → скачайте zip,
-   распакуйте — внутри будет **`Zammad.ipa`**.
-
-> Лимиты GitHub: публичный репозиторий — сборки бесплатны без ограничений по времени,
-> приватный — 2000 «минут» в месяц (macos считается ×10, то есть ≈ 200 сборок).
+1. Install **GitHub Desktop**: <https://desktop.github.com> → sign in to your account.
+2. **File → Add Local Repository → Add** → pick the `...\Default Project\Zammad` folder.
+   If the app offers to create a repository, agree (it creates one right there).
+3. At the bottom of the window choose **Public** → **Publish repository**
+   (uncheck "Keep this code private").
 
 ---
 
-## Шаг 3. Установить на iPhone
+## Step 2. Build the .ipa in the cloud
 
-### Способ 1 — Sideloadly (самый простой для первого раза)
+1. Open your repository on GitHub → the **Actions** tab.
+   If asked, click **I understand my workflows, go ahead and enable them**.
+2. On the left select **Build IPA** → on the right **Run workflow** → branch `main`
+   → the green **Run workflow** button.
+3. Wait 5–15 minutes for the green checkmark.
+   - Red cross → open the run, copy the log of the failed step (send it over).
+4. Open the finished run → the **Artifacts** section at the bottom → **Zammad-ipa**
+   → download the zip, unpack it — inside is **`Zammad.ipa`**.
 
-1. На ПК установите **iTunes** (из Microsoft Store) и **Sideloadly**: <https://sideloadly.io>.
-2. Подключите iPhone кабелем → на iPhone нажмите **«Доверять»**.
-3. Откройте Sideloadly — устройство определится автоматически.
-4. Перетащите `Zammad.ipa` в окно программы → введите **Apple ID** (пароль + код подтверждения,
-   если запросит) → нажмите **Start**.
-5. На iPhone: **Настройки → Основные → VPN и управление устройствами** → нажмите
-   **«Доверять Apple Development: ...»** (делается один раз).
-6. Приложение запускается.
-
-**Минус:** бесплатная подпись живёт **7 дней**. Через неделю просто повторите п. 3–5
-(те же действия с тем же `.ipa`).
-
-### Способ 2 — AltStore (автопродление подписи)
-
-1. На ПК: установите **iTunes** (Microsoft Store), затем **AltServer**: <https://altstore.io> (Downloads).
-2. Подключите iPhone, запустите iTunes (подтвердите «Доверять компьютер»).
-3. Значок AltServer в трее → **Install AltStore** → выберите iPhone → Apple ID + пароль.
-   На iPhone появится AltStore (иконка сначала серая — это нормально).
-4. Положите `Zammad.ipa` на сам телефон: проще всего отправить его себе в мессенджер
-   (Telegram → «Избранное»), на iPhone открыть → сохранить в **Файлы**.
-5. На iPhone в «Файлах» нажмите на `Zammad.ipa` → **Поделиться → AltStore**.
-   (Если AltStore не появился в списке — обновите его до последней версии.)
-6. После установки подтвердите профиль: **Настройки → Основные → VPN и управление устройствами → Доверять**.
-7. **Автопродление:** держите AltServer запущенным на ПК в той же Wi-Fi-сети, что и iPhone,
-   и включите в AltStore обновление (**My Apps → ⋯ → Refresh All**, обычно работает автоматически
-   при зарядке и той же Wi-Fi-сети). Тогда приложение не истечёт.
-
-**Лимит Apple:** одновременно не больше **3 сторонних приложений** — нам хватает одного.
+> GitHub limits: a public repository builds for free with no time limit;
+> a private one has 2000 "minutes" per month (macos counts ×10, so ≈ 200 builds).
 
 ---
 
-## Частые проблемы
+## Step 3. Install on the iPhone
 
-| Ситуация | Решение |
+### Method 1 — Sideloadly (easiest for the first time)
+
+1. On the PC install **iTunes** (from the Microsoft Store) and **Sideloadly**: <https://sideloadly.io>.
+2. Connect the iPhone with a cable → tap **"Trust"** on the phone.
+3. Open Sideloadly — the device is detected automatically.
+4. Drag `Zammad.ipa` into the program window → enter your **Apple ID**
+   (password + confirmation code if asked) → press **Start**.
+5. On the iPhone: **Settings → General → VPN & Device Management** → tap
+   **"Trust Apple Development: …"** (one-time action).
+6. The app launches.
+
+**Downside:** the free signature lives for **7 days**. A week later simply
+repeat items 3–5 (same actions with the same `.ipa`).
+
+### Method 2 — AltStore (automatic signature renewal)
+
+1. On the PC: install **iTunes** (Microsoft Store), then **AltServer**: <https://altstore.io> (Downloads).
+2. Connect the iPhone, launch iTunes (confirm "Trust this computer").
+3. The AltServer tray icon → **Install AltStore** → pick the iPhone → Apple ID + password.
+   AltStore appears on the iPhone (the icon starts out gray — that is normal).
+4. Put `Zammad.ipa` on the phone itself: the easy way is sending it to yourself in a
+   messenger (Telegram → "Saved Messages"), opening it on the iPhone and saving to **Files**.
+5. On the iPhone in **Files** tap `Zammad.ipa` → **Share → AltStore**.
+   (If AltStore is missing from the list — update it to the latest version.)
+6. After installing, trust the profile: **Settings → General → VPN & Device Management → Trust**.
+7. **Auto-renewal:** keep AltServer running on the PC in the same Wi-Fi network as the
+   iPhone and enable refresh in AltStore (**My Apps → ⋯ → Refresh All** — it usually
+   works automatically while charging on the same Wi-Fi). Then the app never expires.
+
+**Apple limit:** no more than **3 sideloaded apps** at a time — one is enough for us.
+
+---
+
+## Common problems
+
+| Situation | Fix |
 |---|---|
-| Нет вкладки Actions на GitHub | Репозиторий пуст или шаг 1 не закончен — загрузите файлы |
-| Sideloadly/AltStore: ошибка входа в Apple ID | Включите двухфакторную аутентификацию: appleid.apple.com → Безопасность |
-| На iPhone «Невозможно открыть» / нет иконки | Настройки → Основные → VPN и управление устройствами → Доверять |
-| Приложение перестало открываться через неделю | Подпись истекла (7 дней) — переустановите `.ipa` (п. 3) |
-| Actions упал на шаге Build | Скопируйте лог ошибки и пришлите — поправлю проект |
+| No Actions tab on GitHub | The repository is empty or step 1 is unfinished — push the files |
+| Sideloadly/AltStore: Apple ID sign-in error | Enable two-factor authentication: appleid.apple.com → Security |
+| On iPhone "Unable to open" / no icon | Settings → General → VPN & Device Management → Trust |
+| The app stopped opening after a week | The signature expired (7 days) — reinstall the `.ipa` (step 3) |
+| Actions failed at the Build step | Copy the error log and send it over — I'll fix the project |
 
 ---
 
-## Альтернатива на будущее: TestFlight
+## Future alternative: TestFlight
 
-Если понадобится ставить обновления без кабеля и без 7-дневного ограничения — нужен платный
-**Apple Developer Program (99 $/год)**: тогда тот же workflow можно доработать автозагрузкой в
-**TestFlight**, и обновления будут приходить на iPhone по ссылке. Скажите — настрою.
+If you need to install updates without a cable and without the 7-day limit, the paid
+**Apple Developer Program ($99/year)** is required: the same workflow can then be
+extended with automatic uploads to **TestFlight**, and updates arrive on the iPhone
+by link. Say the word and I'll set it up.
