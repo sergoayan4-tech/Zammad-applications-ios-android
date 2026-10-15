@@ -33,7 +33,8 @@ class ApiClient {
         method: String,
         path: String,
         query: List<Pair<String, String>> = emptyList(),
-        jsonBody: String? = null
+        jsonBody: String? = null,
+        readTimeoutMs: Int = 20_000
     ): String {
         val url = try {
             URL(buildUrl(path, query))
@@ -52,7 +53,7 @@ class ApiClient {
         try {
             conn.requestMethod = method
             conn.connectTimeout = 20_000
-            conn.readTimeout = 20_000
+            conn.readTimeout = readTimeoutMs
             conn.setRequestProperty("Accept", "application/json")
             conn.setRequestProperty("Content-Type", "application/json")
             authHeader?.let { conn.setRequestProperty("Authorization", it) }
@@ -124,6 +125,14 @@ class ApiClient {
     fun post(path: String, body: String): String = request("POST", path, jsonBody = body)
 
     fun put(path: String, body: String): String = request("PUT", path, jsonBody = body)
+
+    /**
+     * Raw POST for the chat long-polling API (`/api/v1/message_send`,
+     * `/api/v1/message_receive`): untyped payloads and a much longer
+     * read timeout for the receive poll.
+     */
+    fun postRaw(path: String, body: String, readTimeoutMs: Int = 60_000): String =
+        request("POST", path, jsonBody = body, readTimeoutMs = readTimeoutMs)
 
     fun parseArray(text: String): List<JSONObject> = try {
         JSONArray(text).jsonObjects()

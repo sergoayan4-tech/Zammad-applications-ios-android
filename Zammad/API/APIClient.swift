@@ -72,6 +72,21 @@ struct APIClient: Sendable {
         return data
     }
 
+    /// Posts a request and returns the raw JSON object. The chat long-polling
+    /// API (`/api/v1/message_send`, `/api/v1/message_receive`) is untyped and
+    /// long-running, so it bypasses the Decodable pipeline.
+    func postRaw(_ path: String, body: [String: Any], timeout: TimeInterval = 30) async throws -> Any {
+        let request = try makeRequest(path, query: [], method: "POST", body: body, timeout: timeout)
+        let (data, response) = try await perform(request)
+        try validate(data: data, response: response)
+        guard !data.isEmpty else { return [:] }
+        do {
+            return try JSONSerialization.jsonObject(with: data)
+        } catch {
+            throw APIError(kind: .decoding, serverMessage: "\(error)")
+        }
+    }
+
     /// Tries `POST /api/v1/signin` to exchange a login/password for an API token.
     /// Returns `nil` when the server does not allow it (HTTP Basic is used then).
     func signInForToken(username: String, password: String) async -> String? {
@@ -117,7 +132,8 @@ struct APIClient: Sendable {
         _ path: String,
         query: [URLQueryItem],
         method: String,
-        body: [String: Any]?
+        body: [String: Any]?,
+        timeout: TimeInterval = 30
     ) throws -> URLRequest {
         guard let url = buildURL(path, query: query) else {
             throw APIError(kind: .invalidURL)
@@ -125,7 +141,7 @@ struct APIClient: Sendable {
 
         var request = URLRequest(url: url)
         request.httpMethod = method
-        request.timeoutInterval = 30
+        request.timeoutInterval = timeout
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         if let authorization = credentials.authorizationHeaderValue {

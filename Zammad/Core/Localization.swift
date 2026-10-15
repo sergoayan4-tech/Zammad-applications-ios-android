@@ -53,8 +53,21 @@ enum L10n {
 
             // Tabs
             "tab.tickets": "Tickets",
+            "tab.chats": "Chats",
             "tab.new": "New",
             "tab.settings": "Settings",
+
+            "chat.title": "Chats",
+            "chat.agents": "Agents online",
+            "chat.waiting": "Waiting",
+            "chat.my": "My chats",
+            "chat.answer": "Answer",
+            "chat.guest": "Guest",
+            "chat.empty": "Nothing here yet",
+            "chat.disabled": "Chat is disabled on the server.",
+            "chat.noPermission": "Your account has no access to chat.",
+            "chat.placeholder": "Message…",
+            "chat.close": "Close chat",
 
             // Ticket list
             "tickets.title": "Tickets",
@@ -181,8 +194,21 @@ enum L10n {
 
             // Tabs
             "tab.tickets": "Тикеты",
+            "tab.chats": "Чаты",
             "tab.new": "Создать",
             "tab.settings": "Настройки",
+
+            "chat.title": "Чаты",
+            "chat.agents": "Сотрудников онлайн",
+            "chat.waiting": "В очереди",
+            "chat.my": "Мои чаты",
+            "chat.answer": "Ответить",
+            "chat.guest": "Гость",
+            "chat.empty": "Пока пусто",
+            "chat.disabled": "Чат отключён на сервере.",
+            "chat.noPermission": "У вашего аккаунта нет доступа к чату.",
+            "chat.placeholder": "Сообщение…",
+            "chat.close": "Закрыть чат",
 
             // Ticket list
             "tickets.title": "Тикеты",

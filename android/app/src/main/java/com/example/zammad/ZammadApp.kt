@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Settings
@@ -35,15 +36,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.zammad.core.L10n
+import com.example.zammad.model.ChatSession
 import com.example.zammad.model.Ticket
 import com.example.zammad.session.ConnectPhase
 import com.example.zammad.session.SessionStore
+import com.example.zammad.ui.ChatsScreen
+import com.example.zammad.ui.ChatScreen
 import com.example.zammad.ui.ConnectScreen
 import com.example.zammad.ui.NewTicketScreen
 import com.example.zammad.ui.SettingsScreen
 import com.example.zammad.ui.TicketActionsSheet
 import com.example.zammad.ui.TicketDetailScreen
 import com.example.zammad.ui.TicketsScreen
+import com.example.zammad.vm.ChatsModel
 import com.example.zammad.vm.TicketDetailModel
 import com.example.zammad.vm.TicketsListModel
 import kotlinx.coroutines.launch
@@ -105,8 +110,10 @@ private fun SplashScreen() {
 private fun MainContent(session: SessionStore) {
     val scope = rememberCoroutineScope()
     val listModel: TicketsListModel = viewModel()
+    val chatsModel: ChatsModel = viewModel()
     var tab by remember { mutableStateOf(0) }
     var openTicket by remember { mutableStateOf<Ticket?>(null) }
+    var openChat by remember { mutableStateOf<ChatSession?>(null) }
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
@@ -121,12 +128,18 @@ private fun MainContent(session: SessionStore) {
                     NavigationBarItem(
                         selected = tab == 1,
                         onClick = { tab = 1 },
-                        icon = { Icon(Icons.Default.Create, contentDescription = null) },
-                        label = { Text(L10n.t("tab.new")) }
+                        icon = { Icon(Icons.Default.Chat, contentDescription = null) },
+                        label = { Text(L10n.t("tab.chats")) }
                     )
                     NavigationBarItem(
                         selected = tab == 2,
                         onClick = { tab = 2 },
+                        icon = { Icon(Icons.Default.Create, contentDescription = null) },
+                        label = { Text(L10n.t("tab.new")) }
+                    )
+                    NavigationBarItem(
+                        selected = tab == 3,
+                        onClick = { tab = 3 },
                         icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                         label = { Text(L10n.t("tab.settings")) }
                     )
@@ -140,13 +153,28 @@ private fun MainContent(session: SessionStore) {
             ) {
                 when (tab) {
                     0 -> TicketsScreen(session, listModel) { openTicket = it }
-                    1 -> NewTicketScreen(session) { created ->
+                    1 -> ChatsScreen(session, chatsModel) { openChat = it }
+                    2 -> NewTicketScreen(session) { created ->
                         openTicket = created
                         tab = 0
                         scope.launch { listModel.reload() }
                     }
-                    2 -> SettingsScreen(session)
+                    3 -> SettingsScreen(session)
                 }
+            }
+        }
+
+        openChat?.let { chat ->
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                ChatScreen(
+                    model = chatsModel,
+                    sessionId = chat.sessionId ?: "",
+                    onClose = { openChat = null }
+                )
             }
         }
 

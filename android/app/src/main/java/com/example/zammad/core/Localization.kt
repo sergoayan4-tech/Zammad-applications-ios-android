@@ -47,8 +47,21 @@ object L10n {
             "connect.error.credentials" to "Enter your login and password",
 
             "tab.tickets" to "Tickets",
+            "tab.chats" to "Chats",
             "tab.new" to "New",
             "tab.settings" to "Settings",
+
+            "chat.title" to "Chats",
+            "chat.agents" to "Agents online",
+            "chat.waiting" to "Waiting",
+            "chat.my" to "My chats",
+            "chat.answer" to "Answer",
+            "chat.guest" to "Guest",
+            "chat.empty" to "Nothing here yet",
+            "chat.disabled" to "Chat is disabled on the server.",
+            "chat.noPermission" to "Your account has no access to chat.",
+            "chat.placeholder" to "Message…",
+            "chat.close" to "Close chat",
 
             "tickets.title" to "Tickets",
             "tickets.search" to "Search tickets",
@@ -167,8 +180,21 @@ object L10n {
             "connect.error.credentials" to "Укажите логин и пароль",
 
             "tab.tickets" to "Тикеты",
+            "tab.chats" to "Чаты",
             "tab.new" to "Создать",
             "tab.settings" to "Настройки",
+
+            "chat.title" to "Чаты",
+            "chat.agents" to "Сотрудников онлайн",
+            "chat.waiting" to "В очереди",
+            "chat.my" to "Мои чаты",
+            "chat.answer" to "Ответить",
+            "chat.guest" to "Гость",
+            "chat.empty" to "Пока пусто",
+            "chat.disabled" to "Чат отключён на сервере.",
+            "chat.noPermission" to "У вашего аккаунта нет доступа к чату.",
+            "chat.placeholder" to "Сообщение…",
+            "chat.close" to "Закрыть чат",
 
             "tickets.title" to "Тикеты",
             "tickets.search" to "Поиск тикетов",

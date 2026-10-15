@@ -22,6 +22,7 @@
 	68BCBD1BFC3FD2CF04BC0521 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EC8D21DEE8CA3661D5AFFDF /* AppPreferences.swift */; };
 	6CF732E2196533A2DB3938ED /* Ticket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F808BB0B97F0D783A843433 /* Ticket.swift */; };
 	70605E1D6C1CB43250862A30 /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CE272C4E6CC9C9B90DB6657 /* Credentials.swift */; };
+	78F05166A0D93AECA4CF54B7 /* ChatsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA4F1CB03C5D3E0ABFB39C7A /* ChatsListView.swift */; };
 	7AB3AC1DCB5E1A4206686BA7 /* TicketsListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314D2686C7F4F8FAE6CE1CEA /* TicketsListModel.swift */; };
 	7DE287ABA7CDCDB06FF17FF9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E45A9FD14C87ECF7CABEA76 /* SettingsView.swift */; };
 	87A9A541CB783829FBF7090B /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01E7B0B72AD5F9FB9BB8179 /* Localization.swift */; };
@@ -30,11 +31,14 @@
 	958379549A9F44F35E669521 /* ZammadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF00BEC25BD59971F056A6BD /* ZammadApp.swift */; };
 	95E1E0DFC2830419A8B3A0AE /* TicketsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44190A134F0408AC014C3C18 /* TicketsListView.swift */; };
 	96F40A7AEA957B3B4F5E8861 /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2804B83CDE731D09A1F5909 /* Helpers.swift */; };
+	9BFA17813D4C5A59CFE29A93 /* ChatsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360AE6C76DE1A25430195FE /* ChatsModel.swift */; };
 	A201CBA3AC2666657CDF2DC8 /* NewTicketView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B49EE4C672C34291131DB52 /* NewTicketView.swift */; };
 	A6070B9CF28E71610AA267AE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 119822C50221AF33CB965635 /* Assets.xcassets */; };
 	A65ABCF810F4BFD18B7DD3B6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BF3CC512FB1E3704E9DE77 /* RootView.swift */; };
 	AE31A632190E06845FDF66A3 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D3156947DEDF2B90186E242 /* APIClient.swift */; };
 	B7F2455DA78CA45B66EBC6C5 /* NewTicketModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE5B9C5ACB9A0298F0FA084 /* NewTicketModel.swift */; };
+	C945CAA8D9AB7470923A56C3 /* ChatSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B77D5BB1A333ED588F4050B1 /* ChatSessionView.swift */; };
+	E9A00744F4A72F0A5354D97F /* ChatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF31D437B5E5DB7C1FE3DE5 /* ChatModels.swift */; };
 	F426871E9EC914938EA7F22E /* Lookups.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7E7F791DB2B947FFB36ACE /* Lookups.swift */; };
 	F7C279C3D946B4A636A04ADA /* Flex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD0A50713500623F7F1283F /* Flex.swift */; };
 /* End PBXBuildFile section */
@@ -45,6 +49,7 @@
 	0A0000000000000000000011 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 	0B2885599CA5DA49FFFC7B4E /* TicketRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TicketRow.swift; sourceTree = "<group>"; };
 	0C8B94F0E38E94976F5C2FD6 /* ArticleBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArticleBubble.swift; sourceTree = "<group>"; };
+	0CF31D437B5E5DB7C1FE3DE5 /* ChatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModels.swift; sourceTree = "<group>"; };
 	0E45A9FD14C87ECF7CABEA76 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 	119822C50221AF33CB965635 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 	15FB0F4BEE902CA5B158A606 /* TicketActionsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TicketActionsSheet.swift; sourceTree = "<group>"; };
@@ -67,9 +72,12 @@
 	8B49EE4C672C34291131DB52 /* NewTicketView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTicketView.swift; sourceTree = "<group>"; };
 	9DD0A50713500623F7F1283F /* Flex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flex.swift; sourceTree = "<group>"; };
 	A2804B83CDE731D09A1F5909 /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
+	A360AE6C76DE1A25430195FE /* ChatsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsModel.swift; sourceTree = "<group>"; };
+	B77D5BB1A333ED588F4050B1 /* ChatSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatSessionView.swift; sourceTree = "<group>"; };
 	C01E7B0B72AD5F9FB9BB8179 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 	C5649658369100DD4F42D410 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
 	DBE5B9C5ACB9A0298F0FA084 /* NewTicketModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTicketModel.swift; sourceTree = "<group>"; };
+	EA4F1CB03C5D3E0ABFB39C7A /* ChatsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatsListView.swift; sourceTree = "<group>"; };
 	F7295CAA5D96AE18DAD6CE10 /* CommonViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonViews.swift; sourceTree = "<group>"; };
 	FF00BEC25BD59971F056A6BD /* ZammadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZammadApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -164,6 +172,7 @@
 	2DB463C82756F49A9462E9DF /* Models */ = {
 		isa = PBXGroup;
 		children = (
+			0CF31D437B5E5DB7C1FE3DE5 /* ChatModels.swift */,
 			9DD0A50713500623F7F1283F /* Flex.swift */,
 			5E7E7F791DB2B947FFB36ACE /* Lookups.swift */,
 			4F808BB0B97F0D783A843433 /* Ticket.swift */,
@@ -175,6 +184,7 @@
 	41426D0BEC2313BF29A55759 /* Views */ = {
 		isa = PBXGroup;
 		children = (
+			456C7E681643CD084141B89C /* Chats */,
 			4D3BE5D57CC43C836A5DACC7 /* Components */,
 			03B3B7D3C28A660932B6CD69 /* Connect */,
 			E0E3E1D7134FBE06CFC564C0 /* Detail */,
@@ -184,6 +194,15 @@
 			23A387FA7D54B0CB9C93E97A /* Tickets */,
 		);
 		path = Views;
+		sourceTree = "<group>";
+	};
+	456C7E681643CD084141B89C /* Chats */ = {
+		isa = PBXGroup;
+		children = (
+			B77D5BB1A333ED588F4050B1 /* ChatSessionView.swift */,
+			EA4F1CB03C5D3E0ABFB39C7A /* ChatsListView.swift */,
+		);
+		path = Chats;
 		sourceTree = "<group>";
 	};
 	4D3BE5D57CC43C836A5DACC7 /* Components */ = {
@@ -215,6 +234,7 @@
 	AC53D25D389DE0D34414B001 /* ViewModels */ = {
 		isa = PBXGroup;
 		children = (
+			A360AE6C76DE1A25430195FE /* ChatsModel.swift */,
 			DBE5B9C5ACB9A0298F0FA084 /* NewTicketModel.swift */,
 			5A3C4E197F91BAD34F8CE282 /* TicketDetailModel.swift */,
 			314D2686C7F4F8FAE6CE1CEA /* TicketsListModel.swift */,
@@ -326,6 +346,7 @@
 			96F40A7AEA957B3B4F5E8861 /* Helpers.swift in Sources */,
 			8DAE25F6A63F536990EF0F64 /* KeychainStore.swift in Sources */,
 			87A9A541CB783829FBF7090B /* Localization.swift in Sources */,
+			E9A00744F4A72F0A5354D97F /* ChatModels.swift in Sources */,
 			F7C279C3D946B4A636A04ADA /* Flex.swift in Sources */,
 			F426871E9EC914938EA7F22E /* Lookups.swift in Sources */,
 			6CF732E2196533A2DB3938ED /* Ticket.swift in Sources */,
@@ -333,9 +354,12 @@
 			A65ABCF810F4BFD18B7DD3B6 /* RootView.swift in Sources */,
 			586B9437299410F9A59AA1CC /* ReferenceData.swift in Sources */,
 			06117B9155C91432C8E3B04B /* SessionStore.swift in Sources */,
+			9BFA17813D4C5A59CFE29A93 /* ChatsModel.swift in Sources */,
 			B7F2455DA78CA45B66EBC6C5 /* NewTicketModel.swift in Sources */,
 			08D1CF2CB8F7CD0E56A902F4 /* TicketDetailModel.swift in Sources */,
 			7AB3AC1DCB5E1A4206686BA7 /* TicketsListModel.swift in Sources */,
+			C945CAA8D9AB7470923A56C3 /* ChatSessionView.swift in Sources */,
+			78F05166A0D93AECA4CF54B7 /* ChatsListView.swift in Sources */,
 			014A4C76E1582403F0BB2FD6 /* CommonViews.swift in Sources */,
 			0A12DDFA55C8351B69EC7E05 /* HTMLText.swift in Sources */,
 			264E3A510998D2C6799E2F24 /* ConnectView.swift in Sources */,

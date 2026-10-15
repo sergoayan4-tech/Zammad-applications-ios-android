@@ -110,6 +110,57 @@ data class TicketArticle(
     }
 }
 
+/** One message inside a chat session (`Chat::Message` payload). */
+data class ChatMessage(
+    val id: Int?,
+    val content: String,
+    val createdByUserId: Int?,
+    val createdAt: String?
+) {
+    companion object {
+        fun fromJson(o: JSONObject) = ChatMessage(
+            id = o.flexInt("id"),
+            content = o.flexString("content") ?: "",
+            createdByUserId = o.flexInt("created_by_id"),
+            createdAt = o.flexString("created_at")
+        )
+    }
+}
+
+/** One chat session — waiting or running (`Chat::Session` payload). */
+data class ChatSession(
+    val id: Int?,
+    val chatId: Int?,
+    val sessionId: String?,
+    val state: String?,
+    /** The agent assigned to a running session (= me). */
+    val userId: Int?,
+    val createdAt: String?,
+    /** The page URL a visitor came from (empty for agent sessions). */
+    val url: String?,
+    val messages: List<ChatMessage>
+) {
+    companion object {
+        fun fromJson(o: JSONObject): ChatSession {
+            val sessionId = o.flexString("session_id")
+            val prefs = o.optJSONObject("preferences")
+            return ChatSession(
+                id = o.flexInt("id"),
+                chatId = o.flexInt("chat_id"),
+                sessionId = sessionId,
+                state = o.flexString("state"),
+                userId = o.flexInt("user_id"),
+                createdAt = o.flexString("created_at"),
+                url = prefs?.flexString("url"),
+                messages = o.optJSONArray("messages")
+                    ?.jsonObjects()
+                    ?.map { ChatMessage.fromJson(it) }
+                    ?: emptyList()
+            )
+        }
+    }
+}
+
 data class ZammadState(val id: Int, val name: String, val active: Boolean) {
     companion object {
         fun fromJson(o: JSONObject) = ZammadState(
