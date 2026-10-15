@@ -8,7 +8,8 @@
         android:maxSdkVersion="28" />
 
     <application
-        android:label="Zammad"
+        android:label="HelpDesk"
+        android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">

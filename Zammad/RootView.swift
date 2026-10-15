@@ -30,7 +30,7 @@ struct RootView: View {
             Image(systemName: "bubble.left.and.bubble.right.fill")
                 .font(.system(size: 46))
                 .foregroundStyle(Color.accentColor)
-            Text("Zammad")
+            Text("HelpDesk")
                 .font(.title2.bold())
             ProgressView()
             Text(prefs.t("common.loading"))

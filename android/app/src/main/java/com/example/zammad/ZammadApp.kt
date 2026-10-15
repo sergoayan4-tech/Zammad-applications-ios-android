@@ -95,7 +95,7 @@ private fun SplashScreen() {
             tint = MaterialTheme.colorScheme.primary
         )
         Spacer(Modifier.height(14.dp))
-        Text("Zammad", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("HelpDesk", fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(14.dp))
         CircularProgressIndicator(Modifier.size(30.dp))
     }
